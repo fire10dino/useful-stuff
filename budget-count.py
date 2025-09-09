@@ -27,25 +27,28 @@ st.header("➖ Expenses")
 categories = ["Food", "Transportation", "Games", "Other"]
 
 with st.form("add_expense_form", clear_on_submit=True):
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([2,1])
     
     # Category dropdown
     selected_category = col1.selectbox("Category", categories)
     
-    # Custom category text input (only enabled if "Other" is selected)
-    st.session_state.custom_category = col1.text_input(
-        "Custom category (used only if 'Other' selected)",
-        value=st.session_state.custom_category,
-        disabled=(selected_category != "Other")
+    # Custom category input (inside form)
+    custom_category = col1.text_input(
+        "Custom category (only used if 'Other' selected)",
+        value=st.session_state.custom_category
     )
+    st.session_state.custom_category = custom_category  # update session state
     
     # Determine final category
     if selected_category == "Other":
-        category = st.session_state.custom_category.strip() or "Other"
+        category = custom_category.strip() or "Other"
     else:
         category = selected_category
     
+    # Amount input
     exp_amount = col2.number_input("Amount", min_value=0.0, step=1.0)
+    
+    # Add button
     add_expense = st.form_submit_button("Add Expense")
     
     if add_expense and category and exp_amount > 0:
@@ -84,5 +87,4 @@ if not st.session_state.expenses.empty:
         .encode(x="Category", y="Amount", tooltip=["Category", "Amount"])
     )
     st.altair_chart(exp_chart, use_container_width=True)
-
 
