@@ -85,3 +85,4 @@ if not st.session_state.expenses.empty:
     )
     st.altair_chart(exp_chart, use_container_width=True)
 
+
