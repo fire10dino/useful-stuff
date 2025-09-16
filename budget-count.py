@@ -27,7 +27,7 @@ st.session_state.starting_budget = st.sidebar.number_input(
     value=st.session_state.starting_budget,
 )
 
-# Reset button (clear all expenses)
+# Reset button (clear all expenses + inputs)
 if st.sidebar.button("♻️ Reset All"):
     st.session_state.expenses = pd.DataFrame(columns=["Category", "Amount"])
     st.session_state.custom_category = ""
@@ -43,13 +43,12 @@ with st.sidebar.form("add_expense_form"):
         "Category", categories, index=categories.index(st.session_state.last_category)
     )
     
-    # Custom category input (always editable)
-    custom_category = st.text_input(
+    # 🔑 tie directly to session_state with key
+    st.text_input(
         "Custom category (used only if 'Other' selected)",
-        value=st.session_state.custom_category
+        key="custom_category"
     )
     
-    # Amount input
     exp_amount = st.number_input(
         "Amount",
         min_value=0.0,
@@ -62,7 +61,7 @@ with st.sidebar.form("add_expense_form"):
     if add_expense and exp_amount > 0:
         # Determine final category
         if selected_category == "Other":
-            category = custom_category.strip() or "Other"
+            category = st.session_state.custom_category.strip() or "Other"
         else:
             category = selected_category
 
@@ -75,7 +74,7 @@ with st.sidebar.form("add_expense_form"):
         # Reset inputs after adding
         st.session_state.last_category = "Food"
         st.session_state.last_amount = 0.0
-        st.session_state.custom_category = ""
+        st.session_state.custom_category = ""   # ✅ now clears the text box
 
 # -------- Expense Table --------
 if not st.session_state.expenses.empty:
