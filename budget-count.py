@@ -37,9 +37,9 @@ with st.sidebar:
             index=categories.index(st.session_state.last_category),
         )
 
-        st.text_input(
+        custom_name = st.text_input(
             "Custom category (used only if 'Other' selected)",
-            key="custom_category",
+            value=st.session_state.custom_category,
         )
 
         exp_amount = st.number_input(
@@ -54,7 +54,7 @@ with st.sidebar:
         if add_expense and exp_amount > 0:
             # Final category
             if selected_category == "Other":
-                category = st.session_state.custom_category.strip() or "Other"
+                category = custom_name.strip() or "Other"
             else:
                 category = selected_category
 
@@ -64,10 +64,10 @@ with st.sidebar:
                 [st.session_state.expenses, new_expense], ignore_index=True
             )
 
-            # Reset inputs
+            # Reset inputs for next run
             st.session_state.last_category = "Food"
             st.session_state.last_amount = 0.0
-            st.session_state.update({"custom_category": ""})
+            st.session_state.custom_category = ""
 
     # Reset button
     if st.button("♻️ Reset All"):
@@ -91,7 +91,7 @@ if not st.session_state.expenses.empty:
     else:
         st.success(f"**Remaining Budget:** {remaining}")
 
-    # Bar chart instead of pie chart
+    # Bar chart
     st.subheader("📈 Expenses by Category")
     category_summary = st.session_state.expenses.groupby("Category")["Amount"].sum()
     st.bar_chart(category_summary)
