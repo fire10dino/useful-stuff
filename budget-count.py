@@ -12,32 +12,30 @@ if "starting_budget" not in st.session_state:
 if "custom_category" not in st.session_state:
     st.session_state.custom_category = ""
 
-# -------- Starting Budget --------
-st.header("💵 Starting Budget")
-st.session_state.starting_budget = st.number_input(
-    "Enter your starting budget for the week",
+# -------- Sidebar Controls --------
+st.sidebar.header("⚙️ Controls")
+
+# Starting budget
+st.session_state.starting_budget = st.sidebar.number_input(
+    "💵 Starting Budget",
     min_value=0.0,
     step=10.0,
     value=st.session_state.starting_budget,
 )
 
-# -------- Expense Section --------
-st.header("➖ Expenses")
-
+# Expense input
+st.sidebar.subheader("➖ Add Expense")
 categories = ["Food", "Transportation", "Games", "Other"]
 
-with st.form("add_expense_form", clear_on_submit=True):
-    col1, col2 = st.columns([2,1])
+with st.sidebar.form("add_expense_form", clear_on_submit=True):
+    selected_category = st.selectbox("Category", categories)
     
-    # Category dropdown
-    selected_category = col1.selectbox("Category", categories)
-    
-    # Custom category input (inside form)
-    custom_category = col1.text_input(
-        "Custom category (only used if 'Other' selected)",
+    # Custom category input (always editable)
+    custom_category = st.text_input(
+        "Custom category (used only if 'Other' selected)",
         value=st.session_state.custom_category
     )
-    st.session_state.custom_category = custom_category  # update session state
+    st.session_state.custom_category = custom_category
     
     # Determine final category
     if selected_category == "Other":
@@ -45,11 +43,9 @@ with st.form("add_expense_form", clear_on_submit=True):
     else:
         category = selected_category
     
-    # Amount input
-    exp_amount = col2.number_input("Amount", min_value=0.0, step=1.0)
+    exp_amount = st.number_input("Amount", min_value=0.0, step=1.0)
     
-    # Add button
-    add_expense = st.form_submit_button("Add Expense")
+    add_expense = st.form_submit_button("➕ Add Expense")
     
     if add_expense and category and exp_amount > 0:
         new_expense = pd.DataFrame({"Category": [category], "Amount": [exp_amount]})
@@ -87,4 +83,3 @@ if not st.session_state.expenses.empty:
         .encode(x="Category", y="Amount", tooltip=["Category", "Amount"])
     )
     st.altair_chart(exp_chart, use_container_width=True)
-
