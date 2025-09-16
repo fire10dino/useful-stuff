@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 
 st.title("💰 Weekly Budget Tracker")
 
@@ -87,15 +86,14 @@ if not st.session_state.expenses.empty:
     remaining = st.session_state.start_budget - total_spent
 
     st.write(f"**Total Spent:** {total_spent}")
-    st.write(f"**Remaining Budget:** {remaining}")
+    if remaining < 0:
+        st.error(f"**Remaining Budget:** {remaining} (⚠️ Overspent!)")
+    else:
+        st.success(f"**Remaining Budget:** {remaining}")
 
-    # Pie chart
-    fig = px.pie(
-        st.session_state.expenses,
-        names="Category",
-        values="Amount",
-        title="Expenses by Category",
-    )
-    st.plotly_chart(fig, use_container_width=True)
+    # Bar chart instead of pie chart
+    st.subheader("📈 Expenses by Category")
+    category_summary = st.session_state.expenses.groupby("Category")["Amount"].sum()
+    st.bar_chart(category_summary)
 else:
     st.info("No expenses yet. Use the sidebar to add some.")
