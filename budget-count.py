@@ -11,6 +11,10 @@ if "starting_budget" not in st.session_state:
     st.session_state.starting_budget = 0.0
 if "custom_category" not in st.session_state:
     st.session_state.custom_category = ""
+if "last_category" not in st.session_state:
+    st.session_state.last_category = "Food"
+if "last_amount" not in st.session_state:
+    st.session_state.last_amount = 0.0
 
 # -------- Sidebar Controls --------
 st.sidebar.header("⚙️ Controls")
@@ -23,35 +27,55 @@ st.session_state.starting_budget = st.sidebar.number_input(
     value=st.session_state.starting_budget,
 )
 
+# Reset button (clear all expenses)
+if st.sidebar.button("♻️ Reset All"):
+    st.session_state.expenses = pd.DataFrame(columns=["Category", "Amount"])
+    st.session_state.custom_category = ""
+    st.session_state.last_category = "Food"
+    st.session_state.last_amount = 0.0
+
 # Expense input
 st.sidebar.subheader("➖ Add Expense")
 categories = ["Food", "Transportation", "Games", "Other"]
 
-with st.sidebar.form("add_expense_form", clear_on_submit=True):
-    selected_category = st.selectbox("Category", categories)
+with st.sidebar.form("add_expense_form"):
+    selected_category = st.selectbox(
+        "Category", categories, index=categories.index(st.session_state.last_category)
+    )
     
     # Custom category input (always editable)
     custom_category = st.text_input(
         "Custom category (used only if 'Other' selected)",
         value=st.session_state.custom_category
     )
-    st.session_state.custom_category = custom_category
     
-    # Determine final category
-    if selected_category == "Other":
-        category = custom_category.strip() or "Other"
-    else:
-        category = selected_category
-    
-    exp_amount = st.number_input("Amount", min_value=0.0, step=1.0)
+    # Amount input
+    exp_amount = st.number_input(
+        "Amount",
+        min_value=0.0,
+        step=1.0,
+        value=st.session_state.last_amount,
+    )
     
     add_expense = st.form_submit_button("➕ Add Expense")
     
-    if add_expense and category and exp_amount > 0:
+    if add_expense and exp_amount > 0:
+        # Determine final category
+        if selected_category == "Other":
+            category = custom_category.strip() or "Other"
+        else:
+            category = selected_category
+
+        # Save the expense
         new_expense = pd.DataFrame({"Category": [category], "Amount": [exp_amount]})
         st.session_state.expenses = pd.concat(
             [st.session_state.expenses, new_expense], ignore_index=True
         )
+        
+        # Reset inputs after adding
+        st.session_state.last_category = "Food"
+        st.session_state.last_amount = 0.0
+        st.session_state.custom_category = ""
 
 # -------- Expense Table --------
 if not st.session_state.expenses.empty:
